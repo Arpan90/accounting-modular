@@ -1,0 +1,25 @@
+.tableWidth{
+    width: 50%;
+    height: fit-content;
+}
+
+.narration{
+    width: 25em;
+}
+
+.year{
+    font-size: 2em;
+    font-weight: bold;
+    border-left: 2px solid #dee2e6;
+    border-top: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6;
+}
+
+.networkError{
+    font-size: 2em;
+    font-weight: bold;
+    border-left: 2px solid #dee2e6;
+    border-top: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6;
+    color: #ff0000;
+}
