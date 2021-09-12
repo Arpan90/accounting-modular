@@ -3,25 +3,21 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Controls from './Components/Controls/Controls';
 import React, { useEffect, useState } from 'react';
 import TableYear from './Components/TableYear/TableYear';
-import Loader from './UI/Loader/Loader';
-import { LoaderContext } from './Contexts/LoaderContext';
-import Message from './UI/Message/Message';
-import { MessageContext } from './Contexts/MessageContext';
+import WithLoadingInfo from './HOC/WithLoadingInfo/WithLoadingInfo';
 import axios from './axios';
 import { 
         Row, 
         Col,
       } from 'react-bootstrap';
 
-function App() {
+function App(props) {
 
   console.log("app hit");
   const [ formData, setFormData ] = useState( { name:"", year: "" } );
-  const [ showLoader, setShowLoader ] = useState(false);
-  const [ msg, setMsg ] = useState("");
-  const [ success, setSuccess ] = useState(true);
   const [ dataAll, setDataAll ] = useState([]);
   const [ noData, setNoData ] = useState(false);
+
+  const { setShowLoader, setMsg, setSuccess, showLoader, msg, success } = props;
 
   const getAllDataHandler = (name, year) =>{
     console.log("getalldatahandler hit");
@@ -98,15 +94,6 @@ function App() {
   return (
     <div className="App"  >
 
-      <Message msg={msg}
-               setMsg={ setMsg }
-               success={success} />
-
-      <Loader show={showLoader} />
-
-      <MessageContext.Provider value = {{ msg, success, setMsg, setSuccess }} >
-
-        <LoaderContext.Provider value={{ showLoader, setShowLoader }}>
 
             <Controls setFormData = {stateUpdateHandler}  /> 
             <div className="nameStyle" >{ formData.name.toUpperCase() }</div>
@@ -122,13 +109,9 @@ function App() {
 
             : formData.year ? <TableYear formData={ formData }  /> : null
             }
-
-        </LoaderContext.Provider>
-
-      </MessageContext.Provider>
       
     </div>
   );
 }
 
-export default App;
+export default WithLoadingInfo(App);

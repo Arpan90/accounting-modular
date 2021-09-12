@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState  } from 'react';
 import styles from './EditButton.module.css';
 import axios from '../../axios';
-import { LoaderContext } from '../../Contexts/LoaderContext';
-import { MessageContext } from '../../Contexts/MessageContext';
+import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import { ExclamationIcon } from '../ExclamationIcon/ExclamationIcon';
 import {   
         Form,
@@ -26,8 +25,7 @@ const EditButton = ( props ) => {
         document.body.click();
     }
 
-    const { showLoader, setShowLoader } = useContext(LoaderContext); 
-    const { success, setMsg, setSuccess } = useContext(MessageContext); 
+    const { showLoader, setShowLoader, success, setMsg, setSuccess } = props; 
 
     useEffect(() => {
         if(!showLoader && success ){
@@ -181,4 +179,4 @@ const EditButton = ( props ) => {
    
 }
 
-export default EditButton;
+export default WithLoadingInfo(EditButton);

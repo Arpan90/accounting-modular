@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './AddButton.module.css';
 import axios from '../../axios';
-import { LoaderContext } from '../../Contexts/LoaderContext';
-import { MessageContext } from '../../Contexts/MessageContext';
+import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import { ExclamationIcon } from '../ExclamationIcon/ExclamationIcon';
 import { AddIcon } from '../AddIcon/AddIcon';
 import {   
@@ -27,8 +26,7 @@ const AddButton = ( props ) => {
         document.body.click();
     }
 
-    const { showLoader, setShowLoader } = useContext(LoaderContext); 
-    const { success, setMsg, setSuccess } = useContext(MessageContext); 
+    const { showLoader, setShowLoader, success, setMsg, setSuccess } = props; 
 
     useEffect(() => {
         if(!showLoader && success ){
@@ -181,4 +179,4 @@ const AddButton = ( props ) => {
    
 }
 
-export default AddButton;
+export default WithLoadingInfo(AddButton);

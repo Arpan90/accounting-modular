@@ -1,46 +1,35 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Alert } from 'react-bootstrap';
 import './Message.css';
 
 const Message = (props) => {
 
-    const { msg, success } = props;
+    const { msg, success, setMsg } = props;
 
-    const [ show, setShow ] = useState(false);
-
-    const isMounted = useRef(false);
-
-    function closeHandler(){
-        setShow(false);
-    }
+    const closeHandler = useCallback(() =>{
+        setMsg("");
+    },[setMsg]);
 
     useEffect(() => {
-
-        if(isMounted.current){
-            setShow(true);
             let timer = setTimeout(() => {
                 closeHandler();
                 clearTimeout(timer);
             }, 5000);
-        }
-        else{
-            isMounted.current = true;
-        }
 
-    }, [msg])
+    }, [msg, closeHandler]);
 
+    useEffect(() => {
+        console.log("message.js: ", msg, success, props);
+    })
 
-    console.log("msg is: ", msg);
-
-    return( show ?
+    return( msg ?
         <div className="alertBox" >
             <Alert variant={ success ? "success" : "danger" } onClose={closeHandler} dismissible  >
                 { msg }
             </Alert> 
-        </div> 
-        : null
+        </div> : null
          
     );
 }
 
-export default Message;
+export default React.memo(Message);

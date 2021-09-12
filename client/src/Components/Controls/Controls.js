@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useContext, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styles from './Controls.module.css';
-import { LoaderContext } from '../../Contexts/LoaderContext';
-import { MessageContext } from '../../Contexts/MessageContext';
 import { ExclamationIcon } from '../../UI/ExclamationIcon/ExclamationIcon';
 
 import { 
@@ -14,11 +12,11 @@ import {
     Form 
 } from 'react-bootstrap';
 import axios from '../../axios';
+import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 
 const Controls = (props) => {
 
-    const { setShowLoader } = useContext(LoaderContext);
-    const { setMsg, setSuccess } = useContext(MessageContext);
+    const { setShowLoader, setMsg, setSuccess } = props;
 
     const [ narrationValidationFail, setNarrationValidationFail ] = useState(false);
     const [ amountValidationFail, setAmountValidationFail ] = useState(false);
@@ -264,16 +262,16 @@ const Controls = (props) => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer>
-                    <Button variant="danger" onClick={closeHandler}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={submitHandler}>
-                        Save
-                    </Button>
+                        <Button variant="danger" onClick={closeHandler}>
+                            Close
+                        </Button>
+                        <Button variant="primary" onClick={submitHandler}>
+                            Save
+                        </Button>
                     </Modal.Footer>
                 </Modal>
         </Container>
     );
 }
 
-export default React.memo(Controls);
+export default WithLoadingInfo(React.memo(Controls));

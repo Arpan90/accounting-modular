@@ -9,7 +9,6 @@
 .popover{
     z-index: 1050;
     width: 40vw;
-    height: 40vh;
 }
 
 .validationFail{

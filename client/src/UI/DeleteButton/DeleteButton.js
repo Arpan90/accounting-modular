@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import styles from './DeleteButton.module.css';
 import axios from '../../axios';
-import { LoaderContext } from '../../Contexts/LoaderContext';
-import { MessageContext } from '../../Contexts/MessageContext';
+import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import {   
          Button,
          Popover,
@@ -16,9 +15,7 @@ const DeleteButton = ( props ) => {
     }
 
     // const [ showLoader, setShowLoader ] = useState(false); // only declared to capture loader state for rootclose
-    const { showLoader, setShowLoader } = useContext(LoaderContext);
-    const { setMsg, setSuccess } = useContext(MessageContext); 
-
+    const { showLoader, setShowLoader, setMsg, setSuccess } = props;
     const deleteHandler = () => {
         // props.setShowLoader(true);
         setShowLoader(true);
@@ -63,4 +60,4 @@ const DeleteButton = ( props ) => {
     );
 }
 
-export default DeleteButton;
+export default WithLoadingInfo(DeleteButton);

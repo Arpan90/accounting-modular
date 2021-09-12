@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useContext, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styles from './TableYear.module.css';
 import axios from '../../axios';
 import AddButton from '../../UI/AddButton/AddButton';
 import EditButton from '../../UI/EditButton/EditButton';
 import DeleteButton from '../../UI/DeleteButton/DeleteButton';
-import { LoaderContext } from '../../Contexts/LoaderContext';
-import { MessageContext } from '../../Contexts/MessageContext';
+import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import { Container, 
          Row, 
          Col,
@@ -20,12 +19,8 @@ const TableYear = (props) => {
     const [ incomingSum, setIncomingSum ] = useState(0);
     const [ outgoingSum, setOutgoingSum ] = useState(0);
     const [ noData, setNoData ] = useState(false);
-    // const [ networkError, setNetworkError ] = useState(false);
 
-    const { showLoader, setShowLoader } = useContext(LoaderContext);
-    const { setMsg, setSuccess } = useContext(MessageContext);
-
-    // const didMountRef = useRef(false);
+    const { setShowLoader, setMsg, setSuccess } = props;
 
     let { year, name } = props.formData;
     
@@ -34,7 +29,7 @@ const TableYear = (props) => {
         setShowLoader(true);
         axios.get('/api/items', { params: { name: name, year: year } }) 
         .then(res => {
-            console.log("table result: ", res, noData);
+            console.log("table result: ", res);
             if(Array.isArray(res.data)){
                 if(res.data.length){
                     console.log("table updated");
@@ -153,16 +148,16 @@ const TableYear = (props) => {
         setIncomingSum(incomingSum);
         setOutgoingSum(outgoingSum);
 
-        console.log("data is: ", data, noData);
+        // console.log("data is: ", data, noData);
     }, [data, name, year, updateTableHandler])
 
-    useEffect(()=>{
-        console.log("noData watch: ", noData);
-    },[noData])
+    // useEffect(()=>{
+    //     console.log("noData watch: ", noData);
+    // },[noData])
 
-    useEffect(()=>{
-        console.log("showLoader tableyear.js", year)
-    }, [showLoader])
+    // useEffect(()=>{
+    //     console.log("showLoader tableyear.js", year)
+    // }, [showLoader])
 
     return( data.length > 0 || noData ?
         <Container fluid className="bg-light" >
@@ -241,4 +236,4 @@ const TableYear = (props) => {
     );
 }
 
-export default TableYear;
+export default WithLoadingInfo(React.memo(TableYear));
