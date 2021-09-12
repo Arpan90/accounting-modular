@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import styles from './TableYear.module.css';
 import axios from '../../axios';
+import AddButton from '../../UI/AddButton/AddButton';
 import EditButton from '../../UI/EditButton/EditButton';
 import DeleteButton from '../../UI/DeleteButton/DeleteButton';
 import { LoaderContext } from '../../Contexts/LoaderContext';
@@ -18,59 +19,72 @@ const TableYear = (props) => {
     const [ outgoingTableRow, setOutgoingTableRow ] = useState(null);
     const [ incomingSum, setIncomingSum ] = useState(0);
     const [ outgoingSum, setOutgoingSum ] = useState(0);
-    const [ networkError, setNetworkError ] = useState(false);
+    const [ noData, setNoData ] = useState(false);
+    // const [ networkError, setNetworkError ] = useState(false);
 
-    const { setShowLoader } = useContext(LoaderContext);
+    const { showLoader, setShowLoader } = useContext(LoaderContext);
     const { setMsg, setSuccess } = useContext(MessageContext);
 
     // const didMountRef = useRef(false);
 
     let { year, name } = props.formData;
-    let { toggle } = props;
-    // const { setDisplayName } = props;
     
     const updateTableHandler = useCallback( () => {
-        console.log("update for year: ", year);
-        if(networkError){
-            setNetworkError(false);
-        }
+        console.log("updateHandler hit");
         setShowLoader(true);
         axios.get('/api/items', { params: { name: name, year: year } }) 
         .then(res => {
-            console.log("table result: ", res)
-            if(res.data[0]){
-                setData(res.data[0].entries);
+            console.log("table result: ", res, noData);
+            if(Array.isArray(res.data)){
+                if(res.data.length){
+                    console.log("table updated");
+                    setData(res.data[0].entries);
+                    // if(noData){
+                        // setNoData(false);
+                    // }
+                }
+                else{
+                    console.log("culprit nodata");
+                    setNoData(true);
+                }
             }
+            // if(res.data[0]){
+            //     setData(res.data[0].entries);
+            // }
             else if(res.data.message){
-                setMsg("Unable to connect to the database"); // connection error from backend
+                setMsg("Could not load data. Please check your network connection"); // connection error from backend
                 console.log("error in then is: ", res.data.message, year);
                 setSuccess(false);
-                setNetworkError(true);
             }
         })
         .catch(err =>{ 
             setMsg("Could not load data. Please check your network connection"); // axios timeout exceeded
             console.log("error in catch is: ", err, year);
             setSuccess(false);
-            setNetworkError(true);
-            // if(!err.message.includes("timeout")){
-            //     console.log("timeout hit");
-            //     setData([]);
-            // }
         })
         .finally(() => {
             setShowLoader(false);
-            // setDisplayName(name);
         });
-    }, [ name, year, setMsg, setSuccess, setShowLoader, networkError ] )
+    }, [ name, year, setMsg, setSuccess, setShowLoader ] )
 
     useEffect(() =>{
+
+        if(props.dataAll){
+            console.log("dataAll given")
+            setData(props.dataAll);
+            return;
+        }
+
+        if(noData){
+            setNoData(false);
+        }
+
         if(data.length){
             setData([]);
         }
-            updateTableHandler();
+        updateTableHandler();
        
-    },[name, year, toggle, updateTableHandler]) 
+    },[props.formData, updateTableHandler, props.dataAll]) 
 
     useEffect(() => {
         console.log("update for year in useeffect: ", year);
@@ -119,7 +133,7 @@ const TableYear = (props) => {
                                                     <td className={styles.narration} >{ item.narration }</td>
                                                     <td>{ item.amount }</td>
                                                     <td> 
-                                                        <EditButton   formData = {item} 
+                                                        <EditButton formData = {item} 
                                                                     toUpdate={ item.id }
                                                                     updateTableHandler={updateTableHandler} />
                                                                     
@@ -139,18 +153,26 @@ const TableYear = (props) => {
         setIncomingSum(incomingSum);
         setOutgoingSum(outgoingSum);
 
-        console.log("data is: ", data);
+        console.log("data is: ", data, noData);
     }, [data, name, year, updateTableHandler])
 
-    return( data.length > 0 ?
+    useEffect(()=>{
+        console.log("noData watch: ", noData);
+    },[noData])
+
+    useEffect(()=>{
+        console.log("showLoader tableyear.js", year)
+    }, [showLoader])
+
+    return( data.length > 0 || noData ?
         <Container fluid className="bg-light" >
             <Row className="pt-5 ps-5 pe-5  col-lg-11"  >
                 <Col className={styles.year} >{ year }</Col>    
             </Row>
-            {/* { networkError ? 
+            { noData ? 
                 <Row className="pt-5 ps-5 pe-5  col-lg-11"  >
-                    <Col className={styles.networkError} >Network Error. Data could not be loaded for this year.</Col>    
-                </Row> :<> */}
+                    <Col className={styles.noDataStyles} >No entries for this year.</Col>    
+                </Row> :<>
             <Row  className="ps-5 pe-5 col-lg-11">
                 <Table striped bordered hover className={styles.tableWidth} >
                     <thead>
@@ -166,6 +188,11 @@ const TableYear = (props) => {
                     </thead>
                     <tbody>
                         { incomingTableRow }
+                        <tr>
+                            <td colSpan="4" ><AddButton  formData = {{name: name, year: year, direction: "incoming" }} 
+                                                         updateTableHandler={updateTableHandler} />
+                            </td>
+                        </tr>
                     </tbody>
                 </Table>
                 <Table striped bordered hover  className={styles.tableWidth} >
@@ -182,6 +209,11 @@ const TableYear = (props) => {
                     </thead>
                     <tbody>
                         { outgoingTableRow }
+                        <tr>
+                            <td colSpan="4" ><AddButton formData = {{name: name, year: year, direction: "outgoing" }} 
+                                                        updateTableHandler={updateTableHandler} />
+                            </td>
+                        </tr>
                     </tbody>
                 </Table>
             </Row>
@@ -203,10 +235,10 @@ const TableYear = (props) => {
                     </tbody>
                 </Table>
             </Row>
-             {/* </> } */}
+             </> }
             
         </Container> : null
     );
 }
 
-export default React.memo(TableYear);
+export default TableYear;

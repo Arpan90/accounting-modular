@@ -12,6 +12,15 @@
   font-size: 3rem;
 }
 
+.noDataStyles{
+  font-size: 2em;
+  font-weight: bold;
+  border-left: 2px solid #dee2e6;
+  border-top: 2px solid #dee2e6;
+  border-right: 2px solid #dee2e6;
+  color: #0000ff;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

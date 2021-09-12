@@ -1,11 +1,3 @@
-.button{
-    width: 4.5em;
-    height: 2.5em;
-    padding:0;
-    margin-right: 0.5em;
-    margin-bottom: 0.5em;
-}
-
 .buttonGrp{
     margin-top: 1.5em;
 }
@@ -17,6 +9,7 @@
 .popover{
     z-index: 1050;
     width: 40vw;
+    height: 40vh;
 }
 
 .validationFail{
@@ -29,3 +22,8 @@
     padding-top: 1em;
     padding-bottom: 1em;
 }
+
+.clickable{
+    cursor: pointer;
+}
+

@@ -20,7 +20,7 @@ const collections = require('../../models/Item');
 router.get('/', (req, res) => {
     collection = collections[req.query.name];
     year = req.query.year;
-    collection.find({year: year})
+    collection.find( year === "all" ? {} : {year: year})
            .then((result) =>{
                 res.json(result);
            })

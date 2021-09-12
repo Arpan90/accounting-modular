@@ -1,27 +1,38 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-bootstrap';
 import './Message.css';
 
 const Message = (props) => {
 
-    const { msg, success, setMsg } = props;
+    const { msg, success } = props;
+
+    const [ show, setShow ] = useState(false);
+
+    const isMounted = useRef(false);
 
     function closeHandler(){
-        setMsg("");
+        setShow(false);
     }
 
     useEffect(() => {
-        if(msg){
+
+        if(isMounted.current){
+            setShow(true);
             let timer = setTimeout(() => {
-                setMsg("");
+                closeHandler();
                 clearTimeout(timer);
             }, 5000);
         }
-    }, [msg, setMsg])
+        else{
+            isMounted.current = true;
+        }
+
+    }, [msg])
+
 
     console.log("msg is: ", msg);
 
-    return( msg ?
+    return( show ?
         <div className="alertBox" >
             <Alert variant={ success ? "success" : "danger" } onClose={closeHandler} dismissible  >
                 { msg }
