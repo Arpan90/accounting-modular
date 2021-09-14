@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styles from './TableYear.module.css';
 import axios from '../../axios';
 import AddButton from '../../UI/AddButton/AddButton';
@@ -20,32 +20,35 @@ const TableYear = (props) => {
     const [ outgoingSum, setOutgoingSum ] = useState(0);
     const [ noData, setNoData ] = useState(false);
 
-    const { setShowLoader, setMsg, setSuccess } = props;
+    const dataTracker = useRef(false);
+
+    const { setShowLoader, setMsg, setSuccess, showLoader, success } = props;
 
     let { year, name } = props.formData;
     
     const updateTableHandler = useCallback( () => {
-        console.log("updateHandler hit");
+
+        if(data.length){
+            setData([]);
+        }
+
+        console.log("updateTableHandler hit");
         setShowLoader(true);
         axios.get('/api/items', { params: { name: name, year: year } }) 
         .then(res => {
+            setShowLoader(false);
             console.log("table result: ", res);
             if(Array.isArray(res.data)){
                 if(res.data.length){
                     console.log("table updated");
+                    dataTracker.current = true;
                     setData(res.data[0].entries);
-                    // if(noData){
-                        // setNoData(false);
-                    // }
                 }
                 else{
-                    console.log("culprit nodata");
                     setNoData(true);
                 }
             }
-            // if(res.data[0]){
-            //     setData(res.data[0].entries);
-            // }
+            
             else if(res.data.message){
                 setMsg("Could not load data. Please check your network connection"); // connection error from backend
                 console.log("error in then is: ", res.data.message, year);
@@ -53,36 +56,40 @@ const TableYear = (props) => {
             }
         })
         .catch(err =>{ 
+            setShowLoader(false);
             setMsg("Could not load data. Please check your network connection"); // axios timeout exceeded
             console.log("error in catch is: ", err, year);
             setSuccess(false);
         })
-        .finally(() => {
-            setShowLoader(false);
-        });
-    }, [ name, year, setMsg, setSuccess, setShowLoader ] )
+        // .finally(() => {
+        //     setShowLoader(false);
+        // });
+    }, [ name, year, setMsg, setSuccess, setShowLoader, data ] )
+
 
     useEffect(() =>{
 
         if(props.dataAll){
             console.log("dataAll given")
+            if(dataTracker.current){
+                dataTracker.current = false;
+                return;
+            }
             setData(props.dataAll);
             return;
         }
-
-        if(noData){
-            setNoData(false);
+        console.log("control hit")
+        if(dataTracker.current){
+            dataTracker.current = false;
+            return;
         }
 
-        if(data.length){
-            setData([]);
-        }
+        console.log("test");
         updateTableHandler();
        
-    },[props.formData, updateTableHandler, props.dataAll]) 
+    },[props.formData, updateTableHandler, props.dataAll ]) 
 
     useEffect(() => {
-        console.log("update for year in useeffect: ", year);
         let i = 0;
         let j = 0;
         let incomingSum = 0;
@@ -102,11 +109,20 @@ const TableYear = (props) => {
                                                     <td> 
                                                         <EditButton formData = {item} 
                                                                     toUpdate={ item.id }
+                                                                    showLoader={ showLoader }
+                                                                    setShowLoader={setShowLoader}
+                                                                    setMsg={setMsg}
+                                                                    setSuccess={setSuccess}
+                                                                    success={success}
                                                                     updateTableHandler={updateTableHandler} />
 
-                                                        <DeleteButton formData = {item} 
-                                                                    toUpdate={ item.id }
-                                                                    updateTableHandler={updateTableHandler} />
+                                                        <DeleteButton   formData = {item} 
+                                                                        toUpdate={ item.id }
+                                                                        showLoader={ showLoader }
+                                                                        setShowLoader={setShowLoader}
+                                                                        setMsg={setMsg}
+                                                                        setSuccess={setSuccess}
+                                                                        updateTableHandler={updateTableHandler} />
                                                     </td>
                                                 </tr>
                                             )
@@ -130,11 +146,20 @@ const TableYear = (props) => {
                                                     <td> 
                                                         <EditButton formData = {item} 
                                                                     toUpdate={ item.id }
+                                                                    showLoader={ showLoader }
+                                                                    setShowLoader={setShowLoader}
+                                                                    setMsg={setMsg}
+                                                                    setSuccess={setSuccess}
+                                                                    success={success}
                                                                     updateTableHandler={updateTableHandler} />
                                                                     
-                                                        <DeleteButton formData = {item} 
-                                                                    toUpdate={ item.id }
-                                                                    updateTableHandler={updateTableHandler} />
+                                                        <DeleteButton   formData = {item} 
+                                                                        toUpdate={ item.id }
+                                                                        showLoader={ showLoader }
+                                                                        setShowLoader={setShowLoader}
+                                                                        setMsg={setMsg}
+                                                                        setSuccess={setSuccess}
+                                                                        updateTableHandler={updateTableHandler} />
                                                     </td>
                                                 </tr>
                                             )
@@ -148,16 +173,20 @@ const TableYear = (props) => {
         setIncomingSum(incomingSum);
         setOutgoingSum(outgoingSum);
 
-        // console.log("data is: ", data, noData);
-    }, [data, name, year, updateTableHandler])
+        if(noData && data.length){
+            setNoData(false);
+        }
 
-    // useEffect(()=>{
-    //     console.log("noData watch: ", noData);
-    // },[noData])
+    }, [data, name, year, updateTableHandler, noData, setMsg, setShowLoader, setSuccess, showLoader, success]);
 
-    // useEffect(()=>{
-    //     console.log("showLoader tableyear.js", year)
-    // }, [showLoader])
+
+    useEffect(()=>{
+        console.log("updatetablehandler effect");
+    }, [updateTableHandler]);
+
+    useEffect(()=>{
+        console.log("mounted")
+    }, [])
 
     return( data.length > 0 || noData ?
         <Container fluid className="bg-light" >
@@ -184,8 +213,14 @@ const TableYear = (props) => {
                     <tbody>
                         { incomingTableRow }
                         <tr>
-                            <td colSpan="4" ><AddButton  formData = {{name: name, year: year, direction: "incoming" }} 
-                                                         updateTableHandler={updateTableHandler} />
+                            <td colSpan="4" >       <AddButton     
+                                                            formData = {{name: name, year: year, direction: "incoming" }} 
+                                                            showLoader={ showLoader }
+                                                            setShowLoader={setShowLoader}
+                                                            setMsg={setMsg}
+                                                            setSuccess={setSuccess}
+                                                            success={success}
+                                                            updateTableHandler={updateTableHandler} />
                             </td>
                         </tr>
                     </tbody>
@@ -205,8 +240,14 @@ const TableYear = (props) => {
                     <tbody>
                         { outgoingTableRow }
                         <tr>
-                            <td colSpan="4" ><AddButton formData = {{name: name, year: year, direction: "outgoing" }} 
-                                                        updateTableHandler={updateTableHandler} />
+                            <td colSpan="4" >        <AddButton     
+                                                            formData = {{name: name, year: year, direction: "outgoing" }} 
+                                                            showLoader={ showLoader }
+                                                            setShowLoader={setShowLoader}
+                                                            setMsg={setMsg}
+                                                            setSuccess={setSuccess}
+                                                            success={success}
+                                                            updateTableHandler={updateTableHandler} />
                             </td>
                         </tr>
                     </tbody>

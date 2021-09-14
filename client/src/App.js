@@ -1,7 +1,7 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Controls from './Components/Controls/Controls';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TableYear from './Components/TableYear/TableYear';
 import WithLoadingInfo from './HOC/WithLoadingInfo/WithLoadingInfo';
 import axios from './axios';
@@ -17,58 +17,66 @@ function App(props) {
   const [ dataAll, setDataAll ] = useState([]);
   const [ noData, setNoData ] = useState(false);
 
+  const dataTracker = useRef(false);
+
   const { setShowLoader, setMsg, setSuccess, showLoader, msg, success } = props;
-
-  const getAllDataHandler = (name, year) =>{
-    console.log("getalldatahandler hit");
-    if(dataAll.length > 0){
-      console.log("culprit 2");
-      setDataAll([]);
-    }
-
-    setShowLoader(true);
-
-    axios.get('/api/items', { params: { name: name, year: year } })
-           .then((res) =>{
-             console.log("response is: ", res.data, name, year);
-             if(Array.isArray(res.data)){
-               let arrangedData = res.data;
-                if(arrangedData.length){
-                    arrangedData.sort((a, b) =>{
-                    return -(Number(a.year) - Number(b.year));
-                  });
-                  setDataAll(arrangedData);
-                }
-                else{
-                  setNoData(true);
-                }
-             }
-             else if(res.data.message){
-              setMsg("Could not load data. Please check your network connection"); // connection error from backend
-              console.log("error in then is: ", res.data.message, year);
-              setSuccess(false);
-          }
-           })
-           .catch((err) =>{
-              setMsg("Could not load data. Please check your network connection"); // axios timeout exceeded
-              console.log("error in catch is: ", err, year);
-              setSuccess(false);
-           })
-           .finally(()=>{
-             setShowLoader(false);
-           })
-  };
   
   useEffect(() =>{
+
+    const getAllDataHandler = (name, year) =>{
+      console.log("getalldatahandler hit");
+      if(dataAll.length > 0){
+        console.log("culprit 2");
+        setDataAll([]);
+      }
+  
+      setShowLoader(true);
+  
+      axios.get('/api/items', { params: { name: name, year: year } })
+             .then((res) =>{
+               console.log("response is: ", res.data, name, year);
+               if(Array.isArray(res.data)){
+                 let arrangedData = res.data;
+                  if(arrangedData.length){
+                      arrangedData.sort((a, b) =>{
+                      return -(Number(a.year) - Number(b.year));
+                    });
+                    setDataAll(arrangedData);
+                    if(noData){
+                      setNoData(false);
+                    }
+                    dataTracker.current = true;
+                  }
+                  else{
+                    setNoData(true);
+                  }
+               }
+               else if(res.data.message){
+                setMsg("Could not load data. Please check your network connection"); // connection error from backend
+                console.log("error in then is: ", res.data.message, year);
+                setSuccess(false);
+            }
+             })
+             .catch((err) =>{
+                setMsg("Could not load data. Please check your network connection"); // axios timeout exceeded
+                console.log("error in catch is: ", err, year);
+                setSuccess(false);
+             })
+             .finally(()=>{
+               setShowLoader(false);
+             })
+    };
+
+    if(dataTracker.current){
+      dataTracker.current = false;
+      return;
+    }
     console.log("formdata useeffect hit app.js")
     if(formData.year === 'all'){
       let { name, year } = formData;
       getAllDataHandler(name, year);
     }
-    if(noData){
-      setNoData(false);
-    }
-  }, [formData])
+  }, [formData, setMsg, setSuccess, setShowLoader, noData, dataAll])
 
   useEffect(() => {
     console.log("dataAll is (app.js): ", dataAll);

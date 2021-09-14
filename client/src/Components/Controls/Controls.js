@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styles from './Controls.module.css';
 import { ExclamationIcon } from '../../UI/ExclamationIcon/ExclamationIcon';
 
@@ -34,6 +34,8 @@ const Controls = (props) => {
 
     const [ blink , setBlink ] = useState(false);
 
+    const didMount = useRef(false);
+
     const users = ['narayan', 'savita', 'sakshi', 'arpan'];
 
     const [ searchStr, setSearchStr ] = useState('');
@@ -54,8 +56,11 @@ const Controls = (props) => {
     }, [ name, year, setFormData ] );
 
     useEffect(() => {
-        setTableParametersHandler();
-    }, [])
+        if(!didMount.current){
+            didMount.current = true;
+            setTableParametersHandler();
+        }
+    }, [setTableParametersHandler])
 
     const clickHandler = (event, id) => {
         switch(id){
@@ -164,21 +169,20 @@ const Controls = (props) => {
         setShowLoader(true);
         axios.post('/api/items', formData)
              .then((res => {
+                setShowLoader(false);
                 console.log("control post successful");
                 setTableParametersHandler();
                 closeHandler();
                 setBlink(false);
-                setMsg("Entry added successfully !");
+                setMsg("Entry added successfully ! Fetching updated table...");
                 setSuccess(true);
              }))
              .catch(err => {
+                 setShowLoader(false);
                 setMsg("Entry could not be added. Please check your network connection");
                 setSuccess(false);
                  console.log('error is: ', err);
              })
-             .finally(() => {
-                 setShowLoader(false);
-                });
     }
 
     return(

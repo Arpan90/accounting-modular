@@ -1,7 +1,6 @@
 import React from 'react';
 import styles from './DeleteButton.module.css';
 import axios from '../../axios';
-import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import {   
          Button,
          Popover,
@@ -60,4 +59,4 @@ const DeleteButton = ( props ) => {
     );
 }
 
-export default WithLoadingInfo(DeleteButton);
+export default DeleteButton;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from './AddButton.module.css';
 import axios from '../../axios';
-import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import { ExclamationIcon } from '../ExclamationIcon/ExclamationIcon';
 import { AddIcon } from '../AddIcon/AddIcon';
 import {   
@@ -179,4 +178,4 @@ const AddButton = ( props ) => {
    
 }
 
-export default WithLoadingInfo(AddButton);
+export default AddButton;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState  } from 'react';
 import styles from './EditButton.module.css';
 import axios from '../../axios';
-import WithLoadingInfo from '../../HOC/WithLoadingInfo/WithLoadingInfo';
 import { ExclamationIcon } from '../ExclamationIcon/ExclamationIcon';
 import {   
         Form,
@@ -21,6 +20,8 @@ const EditButton = ( props ) => {
     const [ narrationValidationFail, setNarrationValidationFail ] = useState(false);
     const [ amountValidationFail, setAmountValidationFail ] = useState(false);
 
+    const [ updated, setUpdated ] = useState(false);
+
     const hidePopoverHandler = () =>{
         document.body.click();
     }
@@ -34,6 +35,10 @@ const EditButton = ( props ) => {
     }, [showLoader, success] )
 
     const resetHandler = () => {
+        if(updated){
+            setUpdated(false);
+            return;
+        }
         setAmount(amount);
         setNarration(narration);
         setDirection(direction);
@@ -100,6 +105,7 @@ const EditButton = ( props ) => {
                 props.updateTableHandler();
                 setMsg("Updation successful !");
                 setSuccess(true);
+                setUpdated(true);
             })
              .catch(err => {
                 setMsg("Updation failed. Please check your network connection")
@@ -179,4 +185,4 @@ const EditButton = ( props ) => {
    
 }
 
-export default WithLoadingInfo(EditButton);
+export default EditButton;
