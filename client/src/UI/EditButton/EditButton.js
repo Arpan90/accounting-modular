@@ -1,4 +1,4 @@
-import React, { useEffect, useState  } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './EditButton.module.css';
 import axios from '../../axios';
 import { ExclamationIcon } from '../ExclamationIcon/ExclamationIcon';
@@ -8,14 +8,16 @@ import {
         Popover,
         OverlayTrigger
     } from 'react-bootstrap';
+import { monthAndDay, dbDateToFullDate } from '../../utils';
 
 const EditButton = ( props ) => {
     
-    const { name, year, amount, narration, direction } = props.formData;  
+    const { name, year, date, amount, narration, direction } = props.formData;  
 
     const [ newNarration, setNarration ] = useState();
     const [ newAmount, setAmount ] = useState();
     const [ newDirection, setDirection ] = useState();
+    const [ newDate, setDate ] = useState();
 
     const [ narrationValidationFail, setNarrationValidationFail ] = useState(false);
     const [ amountValidationFail, setAmountValidationFail ] = useState(false);
@@ -39,6 +41,8 @@ const EditButton = ( props ) => {
             setUpdated(false);
             return;
         }
+        console.log("datefull: ", dbDateToFullDate(year, date))
+        setDate(dbDateToFullDate(year, date));
         setAmount(amount);
         setNarration(narration);
         setDirection(direction);
@@ -91,6 +95,7 @@ const EditButton = ( props ) => {
         let newFormData = {
                 name: name,
                 year: year,
+                date: monthAndDay(newDate, -1),
                 narration: newNarration,
                 amount: newAmount,
                 direction: newDirection,
@@ -102,13 +107,13 @@ const EditButton = ( props ) => {
         axios.post(`/api/items/${props.toUpdate}`, newFormData )
              .then((res) =>{
                 console.log(res); 
-                props.updateTableHandler();
                 setMsg("Updation successful !");
                 setSuccess(true);
                 setUpdated(true);
+                props.updateTableHandler();
             })
              .catch(err => {
-                setMsg("Updation failed. Please check your network connection")
+                setMsg("Updation failed. Please check your network connection");
                 setSuccess(false);
                 console.log(err);
              })
@@ -121,6 +126,10 @@ const EditButton = ( props ) => {
     const changeHandler = (event) => {
 
         switch(event.target.id){
+
+            case "formBasicDate":
+                setDate(event.target.value);
+                break;
 
             case "formBasicAmount":
                 let val = event.target.value.toString();
@@ -136,11 +145,18 @@ const EditButton = ( props ) => {
         }
     }
 
+    const min = `${year.split('-')[0]}-04-01`;
+    const max = `${year.split('-')[1]}-03-31`;
+
     const popover = (
         <Popover id="popover-basic" className={styles.popover}>
           <Popover.Header as="h3">Edit form</Popover.Header>
           <Popover.Body>
            <Form onSubmit={updateHandler} >
+                <Form.Group className="mb-3" controlId="formBasicDate"> 
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control name="date" type="date" value={newDate} onChange={changeHandler} min={min} max={max} />
+                </Form.Group>
                 <Form.Group controlId="incoming" >
                     <Form.Label>Type</Form.Label>
                     <Form.Check name="direction" type="radio" label="Incoming" checked={newDirection === "incoming"} onChange={changeHandler} />

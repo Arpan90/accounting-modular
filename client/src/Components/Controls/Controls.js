@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styles from './Controls.module.css';
 import { ExclamationIcon } from '../../UI/ExclamationIcon/ExclamationIcon';
+import { convertToFy, determineFy, determineYearWithDate, monthAndDay } from '../../utils';
 
 import { 
     Container, 
@@ -22,11 +23,12 @@ const Controls = (props) => {
     const [ amountValidationFail, setAmountValidationFail ] = useState(false);
 
     const START_YEAR = 2015;
-    const END_YEAR = 2025;
+    const END_YEAR = new Date().getFullYear();
 
-    let yearRange = Array(END_YEAR - START_YEAR + 1).fill().map((_, idx) => (START_YEAR + idx).toString() ); // generates an array of consecutive integers from START_YEAR to END_YEAR .
+    let yearRange = Array(END_YEAR - START_YEAR + 1).fill().map((_, idx) => convertToFy(START_YEAR + idx) ); // generates an array of consecutive integers from START_YEAR to END_YEAR .
 
-    const [ year, setYear ] = useState("all");
+    const [ year, setYear ] = useState(`${END_YEAR}-${END_YEAR + 1}`);
+    const [ date, setDate ] = useState(new Date().toISOString().split('T')[0]);
     const [ name, setName ] = useState("narayan");
     const [ direction, setDirection ] = useState("incoming");
     const [ amount, setAmount ] = useState("0");
@@ -66,6 +68,7 @@ const Controls = (props) => {
         switch(id){
             case "year":
                 setYear(event.target.id);
+                setDate(determineYearWithDate(event.target.id, date));
                 break;
 
             case "name":
@@ -101,8 +104,11 @@ const Controls = (props) => {
     const changeHandler = (event) => {
 
         switch(event.target.id){
-            case "formBasicYear":
-                setYear(event.target.value);
+
+            case "formBasicDate":
+                setDate(event.target.value);
+                setYear(determineFy(event.target.value));
+                console.log('selected date: ', event.target.value);
                 break;
 
             case "formBasicName":
@@ -124,8 +130,7 @@ const Controls = (props) => {
     }
 
     const validationHandler = () =>{
-            let yr = Number(year);
-            if(users.includes(name) && Number.isInteger(yr) && (yr >= START_YEAR && yr <= END_YEAR) && Number(amount) > 0 && narration.trim() !== ""){
+            if(users.includes(name) && Number(amount) > 0 && narration.trim() !== ""){
                 if(amountValidationFail){
                     setAmountValidationFail(false);
                 }
@@ -159,6 +164,7 @@ const Controls = (props) => {
         const formData = {
                 name: name.toLowerCase(),
                 year: year,
+                date: monthAndDay(date, -1),
                 amount: Number(amount),
                 direction: direction,
                 narration: narration
@@ -185,6 +191,9 @@ const Controls = (props) => {
              })
     }
 
+    let min = `${START_YEAR}-04-01`;
+    let max = `${END_YEAR + 1}-03-31`;
+
     return(
         <Container fluid="lg" className="p-5 bg-light" >
             <Row className={styles.rowHeight} >
@@ -198,7 +207,7 @@ const Controls = (props) => {
                         : null }
                         {yearRange.map((yr, index)=>{
                             if(yr.toString().includes(searchStr)){
-                                return <ListGroup.Item key={index} id={yr.toString()} action onClick={(event)=>clickHandler(event, "year")} variant="light" active={ year === yr.toString() } >{ yr }</ListGroup.Item>;
+                                return <ListGroup.Item key={index} id={yr} action onClick={(event)=>clickHandler(event, "year")} variant="light" active={ year === yr.toString() } >{ yr }</ListGroup.Item>;
                             }
                             return null;
                         })} 
@@ -234,14 +243,19 @@ const Controls = (props) => {
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
+                            <Form.Group className="mb-3" controlId="formBasicDate"> 
+                                <Form.Label>Date</Form.Label>
+                                <Form.Control name="date" type="date" value={date} onChange={changeHandler} min={min} max={max} />
+                            </Form.Group>
+
                             <Form.Group className="mb-3" controlId="formBasicYear"> 
                                 <Form.Label>Year</Form.Label>
-                                <Form.Control type="number" defaultValue={year} disabled />
+                                <Form.Control name="year" type="text" value={year} disabled />
                             </Form.Group>
 
                             <Form.Group className="mb-3" controlId="formBasicName">
                                 <Form.Label>Name</Form.Label>
-                                <Form.Control type="text" defaultValue={name.toUpperCase()} disabled  />
+                                <Form.Control name="name" type="text" defaultValue={name.toUpperCase()} disabled  />
                             </Form.Group>
 
                             <Form.Group controlId="incoming" >

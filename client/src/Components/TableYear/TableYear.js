@@ -25,11 +25,32 @@ const TableYear = (props) => {
     const { setShowLoader, setMsg, setSuccess, showLoader, success } = props;
 
     let { year, name } = props.formData;
+
+    const dayWithMonthNameHandler = useCallback( (dbDate) =>{
+        const MONTHS = {
+            "01": "Jan",
+            "02": "Feb",
+            "03": "Mar",
+            "04": "Apr",
+            "05": "May",
+            "06": "Jun",
+            "07": "Jul",
+            "08": "Aug",
+            "09": "Sep",
+            "10": "Oct",
+            "11": "Nov",
+            "12": "Dec"
+        };
+        Object.freeze(MONTHS);
+        let breakdown = dbDate.split("-")
+        return `${breakdown[0]}-${MONTHS[breakdown[1]]}`;
+    }, []);
     
     const updateTableHandler = useCallback( () => {
 
         if(data.length){
-            setData([]);
+            dataTracker.current = true; // will be turned false in useEffect after it prevents the useeffect from updating data or running updateTableHandler again.
+            setData([]);                // The above will be turned false before it is turned true again in the following axios async function.
         }
 
         console.log("updateTableHandler hit");
@@ -104,9 +125,10 @@ const TableYear = (props) => {
                                     return (
                                                 <tr key = {index} >
                                                     <td>{ i }</td>
+                                                    <td className={styles.date} >{ dayWithMonthNameHandler(item.date) }</td>
                                                     <td className={styles.narration} >{ item.narration }</td>
                                                     <td>{ item.amount }</td>
-                                                    <td> 
+                                                    <td className={styles.actions} > 
                                                         <EditButton formData = {item} 
                                                                     toUpdate={ item.id }
                                                                     showLoader={ showLoader }
@@ -141,9 +163,10 @@ const TableYear = (props) => {
                                     return (
                                                 <tr key = {index} >
                                                     <td>{ j }</td>
+                                                    <td>{ dayWithMonthNameHandler(item.date) }</td>
                                                     <td className={styles.narration} >{ item.narration }</td>
                                                     <td>{ item.amount }</td>
-                                                    <td> 
+                                                    <td className={styles.actions} > 
                                                         <EditButton formData = {item} 
                                                                     toUpdate={ item.id }
                                                                     showLoader={ showLoader }
@@ -177,7 +200,7 @@ const TableYear = (props) => {
             setNoData(false);
         }
 
-    }, [data, name, year, updateTableHandler, noData, setMsg, setShowLoader, setSuccess, showLoader, success]);
+    }, [data, name, year, updateTableHandler, noData, setMsg, setShowLoader, setSuccess, showLoader, success, dayWithMonthNameHandler]);
 
 
     useEffect(()=>{
@@ -188,7 +211,7 @@ const TableYear = (props) => {
         console.log("mounted")
     }, [])
 
-    return( data.length > 0 || noData ?
+    return( data.length > 0 || (noData && !props.dataAll) ?
         <Container fluid className="bg-light" >
             <Row className="pt-5 ps-5 pe-5  col-lg-11"  >
                 <Col className={styles.year} >{ year }</Col>    
@@ -201,10 +224,11 @@ const TableYear = (props) => {
                 <Table striped bordered hover className={styles.tableWidth} >
                     <thead>
                         <tr>
-                            <th  colSpan="4" >Incoming</th>
+                            <th  colSpan="5" >Incoming</th>
                         </tr>
                         <tr>
                             <th>#</th>
+                            <th>Date</th>
                             <th>Narration</th>
                             <th>Amount</th>
                             <th>Actions</th>
@@ -213,7 +237,7 @@ const TableYear = (props) => {
                     <tbody>
                         { incomingTableRow }
                         <tr>
-                            <td colSpan="4" >       <AddButton     
+                            <td colSpan="5" >       <AddButton     
                                                             formData = {{name: name, year: year, direction: "incoming" }} 
                                                             showLoader={ showLoader }
                                                             setShowLoader={setShowLoader}
@@ -228,10 +252,11 @@ const TableYear = (props) => {
                 <Table striped bordered hover  className={styles.tableWidth} >
                     <thead>
                         <tr  >
-                            <th  colSpan="4" >Outgoing</th>
+                            <th  colSpan="5" >Outgoing</th>
                         </tr>
                         <tr>
                             <th>#</th>
+                            <th>Date</th>
                             <th>Narration</th>
                             <th>Amount</th>
                             <th>Actions</th>
@@ -240,7 +265,7 @@ const TableYear = (props) => {
                     <tbody>
                         { outgoingTableRow }
                         <tr>
-                            <td colSpan="4" >        <AddButton     
+                            <td colSpan="5" >        <AddButton     
                                                             formData = {{name: name, year: year, direction: "outgoing" }} 
                                                             showLoader={ showLoader }
                                                             setShowLoader={setShowLoader}

@@ -35,6 +35,7 @@ router.post('/:toUpdate',  (req, res) => {
     normalisationHandler(req.body);
     let narration = req.body.narration;
     let direction = req.body.direction;
+    let date = req.body.date;
     let del = req.body.del;
     let toUpdate = Number(req.params.toUpdate);
     if(del){ // deletion
@@ -66,7 +67,7 @@ router.post('/:toUpdate',  (req, res) => {
         //         .catch(err => console.log("error!", err));
     }
     else{ // updation
-        collection.updateOne( {"year":year, "entries.id": toUpdate}, {$set:{ "entries.$.amount":amount, "entries.$.narration":narration, "entries.$.direction": direction }  }, { runValidators: true } )
+        collection.updateOne( {"year":year, "entries.id": toUpdate}, {$set:{ "entries.$.date":date, "entries.$.amount":amount, "entries.$.narration":narration, "entries.$.direction": direction }  }, { runValidators: true } )
                    .then(result =>{
                        res.json(result)
                    } )
@@ -80,6 +81,7 @@ router.post('/',  (req, res) => {
     normalisationHandler(req.body);
     let narration = req.body.narration;
     let direction = req.body.direction;
+    let date = req.body.date;
     let id = 1;   
     collection.findOne({ "year": year })
            .then((item) =>{
@@ -95,7 +97,7 @@ router.post('/',  (req, res) => {
             })
             .catch(err => console.log(err))
             .finally(()=>{
-                collection.updateOne( {"year":year}, {$push:{ "entries" :{ "id": id, "amount":amount,  "narration":narration, "direction":direction }  }},{upsert: true, runValidators: true})
+                collection.updateOne( {"year":year}, {$push:{ "entries" :{ "id": id, "date": date, "amount":amount,  "narration":narration, "direction":direction }  }},{upsert: true, runValidators: true})
                     .then(item=>{
                         res.json(item);
                     })

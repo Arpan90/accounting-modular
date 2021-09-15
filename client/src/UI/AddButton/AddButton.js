@@ -9,6 +9,7 @@ import {
         Popover,
         OverlayTrigger
     } from 'react-bootstrap';
+import { determineYearWithDate, monthAndDay } from '../../utils';
 
 const AddButton = ( props ) => {
     
@@ -17,6 +18,7 @@ const AddButton = ( props ) => {
     const [ newNarration, setNarration ] = useState();
     const [ newAmount, setAmount ] = useState();
     const [ newDirection, setDirection ] = useState();
+    const [ newDate, setDate ] = useState();
 
     const [ narrationValidationFail, setNarrationValidationFail ] = useState(false);
     const [ amountValidationFail, setAmountValidationFail ] = useState(false);
@@ -26,6 +28,9 @@ const AddButton = ( props ) => {
     }
 
     const { showLoader, setShowLoader, success, setMsg, setSuccess } = props; 
+
+    const min = `${year.split('-')[0]}-04-01`;
+    const max = `${year.split('-')[1]}-03-31`;
 
     useEffect(() => {
         if(!showLoader && success ){
@@ -37,6 +42,7 @@ const AddButton = ( props ) => {
         setAmount(0);
         setNarration("");
         setDirection(direction);
+        setDate(determineYearWithDate(year, new Date().toISOString().split('T')[0]));
 
         if(narrationValidationFail){
             setNarrationValidationFail(false);
@@ -86,6 +92,7 @@ const AddButton = ( props ) => {
         let newFormData = {
                 name: name,
                 year: year,
+                date: monthAndDay(newDate, -1),
                 narration: newNarration,
                 amount: newAmount,
                 direction: newDirection,
@@ -96,9 +103,9 @@ const AddButton = ( props ) => {
         axios.post('/api/items', newFormData )
              .then((res) =>{
                 console.log(res); 
-                props.updateTableHandler();
                 setMsg("Entry added successfully !");
                 setSuccess(true);
+                props.updateTableHandler();
             })
              .catch(err => {
                 setMsg("Entry could not be added. Please check your network connection")
@@ -114,6 +121,10 @@ const AddButton = ( props ) => {
     const changeHandler = (event) => {
 
         switch(event.target.id){
+
+            case "formBasicDate":
+                setDate(event.target.value);
+                break;
 
             case "formBasicAmount":
                 let val = event.target.value.toString();
@@ -134,6 +145,10 @@ const AddButton = ( props ) => {
           <Popover.Header as="h3">New Data Form</Popover.Header>
           <Popover.Body>
            <Form onSubmit={addHandler} >
+                <Form.Group className="mb-3" controlId="formBasicDate"> 
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control name="date" type="date" value={newDate} onChange={changeHandler} min={min} max={max} />
+                </Form.Group>
                 <Form.Group controlId="incoming" >
                     <Form.Label>Type</Form.Label>
                     <Form.Check name="direction" type="radio" label="Incoming" checked={newDirection === "incoming"} onChange={changeHandler} />
