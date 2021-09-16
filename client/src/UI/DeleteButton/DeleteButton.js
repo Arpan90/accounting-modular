@@ -14,21 +14,21 @@ const DeleteButton = ( props ) => {
     }
 
     // const [ showLoader, setShowLoader ] = useState(false); // only declared to capture loader state for rootclose
-    const { showLoader, setShowLoader, setMsg, setSuccess } = props;
+    const { showLoader, setShowLoader } = props;
     const deleteHandler = () => {
         // props.setShowLoader(true);
         setShowLoader(true);
         axios.post(`/api/items/${props.toUpdate}`, { ...props.formData , del: true })
              .then((res) =>{
                 console.log(res); 
-                props.updateTableHandler();
-                setMsg("Deletion successful !");
-                setSuccess(true);
+                // setMsg("Deletion successful !");
+                // setSuccess(true);
                 hidePopoverHandler();
+                props.updateTableHandler(props.toUpdate, 'del');
             })
              .catch(err => {
-              setMsg("Deletion failed. Please check your network connection")
-              setSuccess(false);
+              // setMsg("Deletion failed. Please check your network connection")
+              // setSuccess(false);
               console.log(err);
              })
              .finally(() =>{

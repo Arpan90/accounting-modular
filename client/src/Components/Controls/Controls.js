@@ -25,7 +25,7 @@ const Controls = (props) => {
     const START_YEAR = 2015;
     const END_YEAR = new Date().getFullYear();
 
-    let yearRange = Array(END_YEAR - START_YEAR + 1).fill().map((_, idx) => convertToFy(START_YEAR + idx) ); // generates an array of consecutive integers from START_YEAR to END_YEAR .
+    let yearRange = Array(END_YEAR - START_YEAR + 1).fill().map((_, idx) => convertToFy(START_YEAR + idx) ).reverse(); // generates an array of consecutive integers from START_YEAR to END_YEAR .
 
     const [ year, setYear ] = useState(`${END_YEAR}-${END_YEAR + 1}`);
     const [ date, setDate ] = useState(new Date().toISOString().split('T')[0]);
@@ -98,6 +98,12 @@ const Controls = (props) => {
         if(amountValidationFail){
             setAmountValidationFail(false);
         }
+
+        if(year === "all"){
+            setYear(`${END_YEAR}-${END_YEAR + 1}`);
+            setDate(new Date().toISOString().split('T')[0]);
+        }
+
         setShow(true);
     }
 
@@ -176,7 +182,7 @@ const Controls = (props) => {
         axios.post('/api/items', formData)
              .then((res => {
                 setShowLoader(false);
-                console.log("control post successful");
+                console.log("control post successful: ", res);
                 setTableParametersHandler();
                 closeHandler();
                 setBlink(false);
@@ -232,7 +238,8 @@ const Controls = (props) => {
             </Row>
             <Row >
                 <Button variant="outline-secondary" size='lg' onClick={setTableParametersHandler} className={[styles.button, ( blink ? styles.blink : "")].join(" ")} >Get Data</Button>
-                <Button variant="outline-secondary" size='lg' onClick={showHandler} disabled={ year === "all" } className={[styles.button, (year === "all" ? styles.notAllowed : "")].join(" ")} >Enter New Data</Button> 
+                {/* <Button variant="outline-secondary" size='lg' onClick={showHandler} disabled={ year === "all" } className={[styles.button, (year === "all" ? styles.notAllowed : "")].join(" ")} >Enter New Data</Button>  */}
+                <Button variant="outline-secondary" size='lg' onClick={showHandler} className={styles.button} >Enter New Data</Button> 
             </Row>
 
 

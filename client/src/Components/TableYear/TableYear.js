@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import styles from './TableYear.module.css';
 import axios from '../../axios';
 import AddButton from '../../UI/AddButton/AddButton';
@@ -20,9 +20,7 @@ const TableYear = (props) => {
     const [ outgoingSum, setOutgoingSum ] = useState(0);
     const [ noData, setNoData ] = useState(false);
 
-    const dataTracker = useRef(false);
-
-    const { setShowLoader, setMsg, setSuccess, showLoader, success } = props;
+    const { setShowLoader, setMsg, setSuccess, showLoader, success, setCount } = props;
 
     let { year, name } = props.formData;
 
@@ -45,72 +43,105 @@ const TableYear = (props) => {
         let breakdown = dbDate.split("-")
         return `${breakdown[0]}-${MONTHS[breakdown[1]]}`;
     }, []);
-    
-    const updateTableHandler = useCallback( () => {
 
-        if(data.length){
-            dataTracker.current = true; // will be turned false in useEffect after it prevents the useeffect from updating data or running updateTableHandler again.
-            setData([]);                // The above will be turned false before it is turned true again in the following axios async function.
+    const updateTableHandler = useCallback((id, op, item ) =>{
+        let temp = [];
+        console.log("data updated1");
+        switch(op){
+            case 'del':
+                console.log("data updated2");
+                temp = data.filter((element, index) => element.id !== id );
+                if(!temp.length){
+                    console.log("test del");
+                    if(props.dataAll){
+                        setCount(prevState => prevState - 1);
+                        if(!(props.count - 1)){
+                            return;
+                        }
+                    }
+                    else{
+                        setNoData(true);
+                    }
+                }
+                setMsg("Deletion successful !");
+                setSuccess(true);
+                console.log("data updated3");
+                break;
+
+            case 'edit':
+                temp = data;
+                temp[temp.findIndex((element)=> element.id === id)] = item;
+                break;
+
+            case 'add':
+                temp = data;
+                temp.push(item);
+                if(temp.length === 1 && noData ){
+                    setNoData(false);
+                }
+                break;
+
+            default:
+                break;
         }
 
-        console.log("updateTableHandler hit");
-        setShowLoader(true);
-        axios.get('/api/items', { params: { name: name, year: year } }) 
-        .then(res => {
-            setShowLoader(false);
-            console.log("table result: ", res);
-            if(Array.isArray(res.data)){
-                if(res.data.length){
-                    console.log("table updated");
-                    dataTracker.current = true;
-                    setData(res.data[0].entries);
-                }
-                else{
-                    setNoData(true);
-                }
-            }
-            
-            else if(res.data.message){
-                setMsg("Could not load data. Please check your network connection"); // connection error from backend
-                console.log("error in then is: ", res.data.message, year);
-                setSuccess(false);
-            }
-        })
-        .catch(err =>{ 
-            setShowLoader(false);
-            setMsg("Could not load data. Please check your network connection"); // axios timeout exceeded
-            console.log("error in catch is: ", err, year);
-            setSuccess(false);
-        })
-        // .finally(() => {
-        //     setShowLoader(false);
-        // });
-    }, [ name, year, setMsg, setSuccess, setShowLoader, data ] )
+        setData(temp);
+
+    }, [data, noData, props.dataAll, setCount, setMsg, setSuccess, props.count ]);
 
 
     useEffect(() =>{
 
+        const getDataHandler = () => {
+
+            console.log("updateTableHandler hit");
+            setShowLoader(true);
+            axios.get('/api/items', { params: { name: name, year: year } }) 
+            .then(res => {
+                setShowLoader(false);
+                console.log("table result: ", res);
+                if(Array.isArray(res.data)){
+                    if(res.data.length){
+                        if(noData){
+                            setNoData(false);
+                        }
+                        console.log("table updated");
+                        setData(res.data[0].entries);
+                    }
+                    else{
+                        setNoData(true);
+                    }
+                }
+                
+                else if(res.data.message){
+                    setMsg("Could not load data. Please check your network connection"); // connection error from backend
+                    console.log("error in then is: ", res.data.message, year);
+                    setSuccess(false);
+                }
+            })
+            .catch(err =>{ 
+                setShowLoader(false);
+                setMsg("Could not load data. Please check your network connection"); // axios timeout exceeded
+                console.log("error in catch is: ", err, year);
+                setSuccess(false);
+            })
+            // .finally(() => {
+            //     setShowLoader(false);
+            // });
+        }
+
         if(props.dataAll){
-            console.log("dataAll given")
-            if(dataTracker.current){
-                dataTracker.current = false;
-                return;
-            }
+            console.log("dataAll given");
             setData(props.dataAll);
             return;
         }
-        console.log("control hit")
-        if(dataTracker.current){
-            dataTracker.current = false;
-            return;
-        }
 
-        console.log("test");
-        updateTableHandler();
+        getDataHandler();
        
-    },[props.formData, updateTableHandler, props.dataAll ]) 
+    },[props.formData, props.dataAll, name, setMsg, setShowLoader, setSuccess, year, noData ]) 
 
     useEffect(() => {
+        console.log("second effect");
         let i = 0;
         let j = 0;
         let incomingSum = 0;
@@ -196,29 +227,21 @@ const TableYear = (props) => {
         setIncomingSum(incomingSum);
         setOutgoingSum(outgoingSum);
 
-        if(noData && data.length){
-            setNoData(false);
-        }
-
     }, [data, name, year, updateTableHandler, noData, setMsg, setShowLoader, setSuccess, showLoader, success, dayWithMonthNameHandler]);
 
-
-    useEffect(()=>{
-        console.log("updatetablehandler effect");
-    }, [updateTableHandler]);
-
-    useEffect(()=>{
-        console.log("mounted")
-    }, [])
-
-    return( data.length > 0 || (noData && !props.dataAll) ?
+    return( data.length || (noData && !props.dataAll) ?
         <Container fluid className="bg-light" >
-            <Row className="pt-5 ps-5 pe-5  col-lg-11"  >
-                <Col className={styles.year} >{ year }</Col>    
-            </Row>
+            {/* {
+              data.length || (noData && !props.dataAll) ? */}
+                <Row className="pt-5 ps-5 pe-5  col-lg-11"  >
+                    <Col className={styles.year} >{ year }</Col>    
+                 </Row> 
+            {/* } */}
+            
             { noData ? 
                 <Row className="pt-5 ps-5 pe-5  col-lg-11"  >
                     <Col className={styles.noDataStyles} >No entries for this year.</Col>    
+                    {/* <Col className={styles.noDataStyles} >{`No entries for this ${props.dataAll ? 'person' : 'year'}.`}</Col>     */}
                 </Row> :<>
             <Row  className="ps-5 pe-5 col-lg-11">
                 <Table striped bordered hover className={styles.tableWidth} >

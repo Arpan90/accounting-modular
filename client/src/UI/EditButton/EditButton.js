@@ -110,7 +110,7 @@ const EditButton = ( props ) => {
                 setMsg("Updation successful !");
                 setSuccess(true);
                 setUpdated(true);
-                props.updateTableHandler();
+                props.updateTableHandler( props.toUpdate, 'edit', newFormData);
             })
              .catch(err => {
                 setMsg("Updation failed. Please check your network connection");

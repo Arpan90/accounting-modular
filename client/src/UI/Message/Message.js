@@ -16,6 +16,10 @@ const Message = (props) => {
                 clearTimeout(timer);
             }, 5000);
 
+            return function cleanup(){
+                clearTimeout(timer);
+            }
+
     }, [msg, closeHandler]);
 
     useEffect(() => {

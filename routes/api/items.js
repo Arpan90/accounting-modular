@@ -99,6 +99,7 @@ router.post('/',  (req, res) => {
             .finally(()=>{
                 collection.updateOne( {"year":year}, {$push:{ "entries" :{ "id": id, "date": date, "amount":amount,  "narration":narration, "direction":direction }  }},{upsert: true, runValidators: true})
                     .then(item=>{
+                        item["id"] = id;
                         res.json(item);
                     })
                     .catch(err =>console.log("not updated", err)); 

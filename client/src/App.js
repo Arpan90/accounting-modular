@@ -16,20 +16,17 @@ function App(props) {
   const [ formData, setFormData ] = useState( { name:"", year: "" } );
   const [ dataAll, setDataAll ] = useState([]);
   const [ noData, setNoData ] = useState(false);
+  const [ count, setCount ] = useState(0);
 
-  const dataTracker = useRef(false);
+  const isMounted = useRef(false);
+  const preventRefire = useRef(false);
 
-  const { setShowLoader, setMsg, setSuccess, showLoader, msg, success } = props;
+  const { setShowLoader, setMsg, setSuccess, showLoader } = props;
   
   useEffect(() =>{
 
     const getAllDataHandler = (name, year) =>{
-      console.log("getalldatahandler hit");
-      if(dataAll.length > 0){
-        console.log("culprit 2");
-        setDataAll([]);
-      }
-  
+      console.log("getalldata hit")
       setShowLoader(true);
   
       axios.get('/api/items', { params: { name: name, year: year } })
@@ -39,17 +36,18 @@ function App(props) {
                  let arrangedData = res.data;
                   if(arrangedData.length){
                       arrangedData.sort((a, b) =>{
-                      return -(Number(a.year) - Number(b.year));
+                      return -(Number(a.year.split('-')[0]) - Number(b.year.split('-')[0]));
                     });
                     setDataAll(arrangedData);
                     if(noData){
                       setNoData(false);
                     }
-                    dataTracker.current = true;
+                    setCount(arrangedData.length);
                   }
                   else{
                     setNoData(true);
                   }
+                  preventRefire.current = true;
                }
                else if(res.data.message){
                 setMsg("Could not load data. Please check your network connection"); // connection error from backend
@@ -67,35 +65,32 @@ function App(props) {
              })
     };
 
-    if(dataTracker.current){
-      dataTracker.current = false;
-      return;
-    }
-    console.log("formdata useeffect hit app.js")
+    
     if(formData.year === 'all'){
+      if(preventRefire.current){
+        preventRefire.current = false;
+        return;
+      }
       let { name, year } = formData;
       getAllDataHandler(name, year);
     }
-  }, [formData, setMsg, setSuccess, setShowLoader, noData, dataAll])
+  }, [formData, setMsg, setSuccess, setShowLoader, noData ]);
 
-  useEffect(() => {
-    console.log("dataAll is (app.js): ", dataAll);
-  }, [dataAll])
- 
-  useEffect(() =>{
-    console.log("msg useeffect app.js");
-  }, [msg])
-
-  useEffect(() =>{
-    console.log("success useeffect app.js");
-  }, [success])
-
-  useEffect(() =>{
-    console.log("showLoader useeffect app.js");
-  }, [showLoader])
+  useEffect(()=>{
+    if(!isMounted.current){
+      isMounted.current = true;
+      return;
+    }
+    if(count === 0){
+      setDataAll([]);
+      setNoData(true);
+      setMsg("Deletion successful !");
+      setSuccess(true);
+    }
+  }, [count, setMsg, setSuccess]);
 
   const stateUpdateHandler = (val) => {
-      console.log("stateupdatehandler app.js");
+      console.log("stateupdatehandler app.js", dataAll, noData);
       setFormData(val);
   }
   
@@ -105,17 +100,17 @@ function App(props) {
 
             <Controls setFormData = {stateUpdateHandler}  /> 
             <div className="nameStyle" >{ formData.name.toUpperCase() }</div>
-            { formData.year === 'all'  ? 
+            { formData.year === 'all' && !showLoader  ? 
               ! noData ?
               dataAll.map((item, index) =>{
-                  return <TableYear key={index} formData={{...formData, year: item.year }}  dataAll={item.entries} />
+                  return <TableYear key={index} formData={{...formData, year: item.year }} setCount={setCount} count={count}  dataAll={item.entries} />
                 
               })
               : <Row className="pt-5 ps-5 pe-5  col-lg-11"  > 
-                                    <Col className="noDataStyles" >No entries for this person.</Col>    
-                                 </Row>
+                  <Col className="noDataStyles" >No entries for this person.</Col>    
+                </Row>
 
-            : formData.year ? <TableYear formData={ formData }  /> : null
+            : formData.year && !showLoader ? <TableYear formData={ formData }  /> : null
             }
       
     </div>

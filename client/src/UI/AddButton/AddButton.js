@@ -102,10 +102,11 @@ const AddButton = ( props ) => {
         
         axios.post('/api/items', newFormData )
              .then((res) =>{
-                console.log(res); 
+                console.log("item added: ", res); 
                 setMsg("Entry added successfully !");
                 setSuccess(true);
-                props.updateTableHandler();
+                newFormData["id"]= res.data.id;
+                props.updateTableHandler('_', 'add', newFormData);
             })
              .catch(err => {
                 setMsg("Entry could not be added. Please check your network connection")
