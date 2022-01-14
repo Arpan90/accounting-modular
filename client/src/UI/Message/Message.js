@@ -28,7 +28,7 @@ const Message = (props) => {
 
     return( msg ?
         <div className="alertBox" >
-            <Alert variant={ success ? "success" : "danger" } onClose={closeHandler} dismissible  >
+            <Alert variant={ success ? "success" : "danger" }   >
                 { msg }
             </Alert> 
         </div> : null

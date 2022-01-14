@@ -41,3 +41,25 @@ export const dbDateToFullDate = (year, dbDate) =>{
     let yearArr = year.split('-');
     return `${ month < 4 ? yearArr[1] : yearArr[0] }-${[breakdown[1], breakdown[0]].join('-')}`;
 }
+
+export const dayWithMonthNameHandler = (dbDate) =>{
+    const MONTHS = {
+        "01": "Jan",
+        "02": "Feb",
+        "03": "Mar",
+        "04": "Apr",
+        "05": "May",
+        "06": "Jun",
+        "07": "Jul",
+        "08": "Aug",
+        "09": "Sep",
+        "10": "Oct",
+        "11": "Nov",
+        "12": "Dec"
+    };
+    Object.freeze(MONTHS);
+    console.log("test dbdate split: ", dbDate);
+    let breakdown = dbDate.split("-")
+    console.log("test utils: ", dbDate, breakdown);
+    return `${breakdown[0]}-${MONTHS[breakdown[1]]}`;
+}

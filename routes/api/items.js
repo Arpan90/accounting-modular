@@ -33,9 +33,10 @@ router.get('/', (req, res) => {
 
 router.post('/:toUpdate',  (req, res) => {
     normalisationHandler(req.body);
-    let narration = req.body.narration;
+    let description = req.body.description;
     let direction = req.body.direction;
     let date = req.body.date;
+    let noDate = req.body.noDate;
     let del = req.body.del;
     let toUpdate = Number(req.params.toUpdate);
     if(del){ // deletion
@@ -67,7 +68,7 @@ router.post('/:toUpdate',  (req, res) => {
         //         .catch(err => console.log("error!", err));
     }
     else{ // updation
-        collection.updateOne( {"year":year, "entries.id": toUpdate}, {$set:{ "entries.$.date":date, "entries.$.amount":amount, "entries.$.narration":narration, "entries.$.direction": direction }  }, { runValidators: true } )
+        collection.updateOne( {"year":year, "entries.id": toUpdate}, {$set:{ "entries.$.date":date, "entries.$.noDate":noDate, "entries.$.amount":amount, "entries.$.description":description, "entries.$.direction": direction }  }, { runValidators: true } )
                    .then(result =>{
                        res.json(result)
                    } )
@@ -79,9 +80,10 @@ router.post('/:toUpdate',  (req, res) => {
 
 router.post('/',  (req, res) => {
     normalisationHandler(req.body);
-    let narration = req.body.narration;
+    let description = req.body.description;
     let direction = req.body.direction;
     let date = req.body.date;
+    let noDate = req.body.noDate;
     let id = 1;   
     collection.findOne({ "year": year })
            .then((item) =>{
@@ -97,7 +99,7 @@ router.post('/',  (req, res) => {
             })
             .catch(err => console.log(err))
             .finally(()=>{
-                collection.updateOne( {"year":year}, {$push:{ "entries" :{ "id": id, "date": date, "amount":amount,  "narration":narration, "direction":direction }  }},{upsert: true, runValidators: true})
+                collection.updateOne( {"year":year}, {$push:{ "entries" :{ "id": id, "date": date, "noDate":noDate, "amount":amount,  "description":description, "direction":direction }  }},{upsert: true, runValidators: true})
                     .then(item=>{
                         item["id"] = id;
                         res.json(item);
@@ -112,7 +114,7 @@ router.post('/',  (req, res) => {
     //     entries:[
     //         {
     //             amount: amount,
-    //             narration: narration,
+    //             description: description,
     //             direction: direction
     //         }
     //     ]

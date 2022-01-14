@@ -12,12 +12,13 @@ import { monthAndDay, dbDateToFullDate } from '../../utils';
 
 const EditButton = ( props ) => {
     
-    const { name, year, date, amount, narration, direction } = props.formData;  
+    const { name, year, date, noDate, amount, description, direction } = props.formData;  
 
     const [ newNarration, setNarration ] = useState();
     const [ newAmount, setAmount ] = useState();
     const [ newDirection, setDirection ] = useState();
     const [ newDate, setDate ] = useState();
+    const [ newNoDate, setNoDate ] = useState();
 
     const [ narrationValidationFail, setNarrationValidationFail ] = useState(false);
     const [ amountValidationFail, setAmountValidationFail ] = useState(false);
@@ -43,8 +44,9 @@ const EditButton = ( props ) => {
         }
         console.log("datefull: ", dbDateToFullDate(year, date))
         setDate(dbDateToFullDate(year, date));
+        setNoDate(noDate);
         setAmount(amount);
-        setNarration(narration);
+        setNarration(description);
         setDirection(direction);
 
         if(narrationValidationFail){
@@ -75,7 +77,7 @@ const EditButton = ( props ) => {
             setAmountValidationFail(false);
         }
         if(newNarration.trim() === ""){
-            console.log("narration error hit")
+            console.log("description error hit")
             setNarrationValidationFail(true);
         }
         else if(narrationValidationFail){
@@ -93,10 +95,12 @@ const EditButton = ( props ) => {
         }
 
         let newFormData = {
+                id: props.toUpdate,
                 name: name,
                 year: year,
                 date: monthAndDay(newDate, -1),
-                narration: newNarration,
+                noDate: newNoDate,
+                description: newNarration,
                 amount: newAmount,
                 direction: newDirection,
             }
@@ -131,6 +135,10 @@ const EditButton = ( props ) => {
                 setDate(event.target.value);
                 break;
 
+            case "formBasicNoDate":
+                setNoDate(event.target.checked)
+                break;
+
             case "formBasicAmount":
                 let val = event.target.value.toString();
                 setAmount(val);
@@ -157,12 +165,15 @@ const EditButton = ( props ) => {
                     <Form.Label>Date</Form.Label>
                     <Form.Control name="date" type="date" value={newDate} onChange={changeHandler} min={min} max={max} />
                 </Form.Group>
-                <Form.Group controlId="incoming" >
-                    <Form.Label>Type</Form.Label>
-                    <Form.Check name="direction" type="radio" label="Incoming" checked={newDirection === "incoming"} onChange={changeHandler} />
+                <Form.Group className="mb-3" controlId="formBasicNoDate"> 
+                    <Form.Check name="noDate" label="No Date" type="checkbox" checked={newNoDate} onChange={changeHandler}  />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="outgoing" >
-                    <Form.Check name="direction" type="radio" label="Outgoing" checked={newDirection === "outgoing"} onChange={changeHandler} />
+                <Form.Group controlId="credit" >
+                    <Form.Label>Type</Form.Label>
+                    <Form.Check name="direction" type="radio" label="Credit" checked={newDirection === "credit"} onChange={changeHandler} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="debit" >
+                    <Form.Check name="direction" type="radio" label="Debit" checked={newDirection === "debit"} onChange={changeHandler} />
                 </Form.Group>  
 
                 <Form.Group className="mb-4" controlId="formBasicAmount">
@@ -172,9 +183,9 @@ const EditButton = ( props ) => {
                 </Form.Group> 
 
                 <Form.Group className="mb-3" controlId="formBasicNarration">
-                    <Form.Label>Narration</Form.Label>
-                    <Form.Control as="textarea" placeholder="Enter narration" onChange={changeHandler} value={newNarration} />
-                    { narrationValidationFail ? <div className={styles.validationFail} ><span> { ExclamationIcon } </span><span>Narration must contain some descriptive text</span></div> : null }
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control as="textarea" placeholder="Enter description" onChange={changeHandler} value={newNarration} />
+                    { narrationValidationFail ? <div className={styles.validationFail} ><span> { ExclamationIcon } </span><span>Description must contain some descriptive text</span></div> : null }
                 </Form.Group> 
                 <Button type="submit" className={styles.buttonGrp}  variant='success' onClick={updateHandler} >Update</Button>
                 <Button className={ [ styles.buttonGrp, styles.buttonCancel ].join(" ") } onClick={hidePopoverHandler} variant='danger' >Cancel</Button>

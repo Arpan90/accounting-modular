@@ -11,9 +11,7 @@ app.use(express.json());
 // DB config
 
 const db = config.get("mongoURI");
-
-
-
+console.log("db is: ", db);
 // Connect to Mongo
 mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true  })
         .then(() => console.log('MongoDB connected'))

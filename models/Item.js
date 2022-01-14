@@ -24,12 +24,17 @@ const ItemSchema = new Schema({
             required: true
         },
 
+        noDate:{
+            type: Boolean,
+            required: true
+        },
+
         amount:{
             type: Number,
             required: true
         },
 
-        narration:{
+        description:{
             type: String,
             required: true
         },

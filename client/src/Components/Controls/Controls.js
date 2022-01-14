@@ -29,10 +29,11 @@ const Controls = (props) => {
 
     const [ year, setYear ] = useState(`${END_YEAR}-${END_YEAR + 1}`);
     const [ date, setDate ] = useState(new Date().toISOString().split('T')[0]);
+    const [ noDate, setNoDate ] = useState(false);
     const [ name, setName ] = useState("narayan");
-    const [ direction, setDirection ] = useState("incoming");
-    const [ amount, setAmount ] = useState("0");
-    const [ narration, setNarration ] = useState('');  
+    const [ direction, setDirection ] = useState("credit");
+    const [ amount, setAmount ] = useState(0);
+    const [ description, setNarration ] = useState('');  
 
     const [ blink , setBlink ] = useState(false);
 
@@ -92,6 +93,7 @@ const Controls = (props) => {
     const showHandler = () => {
         setAmount(0);
         setNarration("");
+        setNoDate(true);
         if(narrationValidationFail){
             setNarrationValidationFail(false);
         }
@@ -117,12 +119,16 @@ const Controls = (props) => {
                 console.log('selected date: ', event.target.value);
                 break;
 
+            case "formBasicNoDate":
+                setNoDate(event.target.checked)
+                break;
+
             case "formBasicName":
                 setName(event.target.value);
                 break;
 
             case "formBasicAmount":
-                let val = event.target.value.toString();
+                let val = event.target.value;
                 setAmount(val);
                 break;
 
@@ -136,7 +142,7 @@ const Controls = (props) => {
     }
 
     const validationHandler = () =>{
-            if(users.includes(name) && Number(amount) > 0 && narration.trim() !== ""){
+            if(users.includes(name) && Number(amount) > 0 && description.trim() !== ""){
                 if(amountValidationFail){
                     setAmountValidationFail(false);
                 }
@@ -151,7 +157,7 @@ const Controls = (props) => {
             else if(amountValidationFail){
                 setAmountValidationFail(false);
             }
-            if(narration.trim() === ""){
+            if(description.trim() === ""){
                 setNarrationValidationFail(true);
             }
             else if(narrationValidationFail){
@@ -171,9 +177,10 @@ const Controls = (props) => {
                 name: name.toLowerCase(),
                 year: year,
                 date: monthAndDay(date, -1),
+                noDate: noDate,
                 amount: Number(amount),
                 direction: direction,
-                narration: narration
+                description: description
             }
 
             console.log("formData in controls = ", formData);
@@ -231,8 +238,8 @@ const Controls = (props) => {
 
                 <Col lg={4}>
                     <ListGroup >
-                        <ListGroup.Item id="incoming" action variant="light" onClick={(event)=>clickHandler(event, "direction")}  active={ direction === 'incoming' } >Incoming</ListGroup.Item>
-                        <ListGroup.Item id="outgoing" action variant="light" onClick={(event)=>clickHandler(event, "direction")}  active={ direction === 'outgoing' } >Outgoing</ListGroup.Item>
+                        <ListGroup.Item id="credit" action variant="light" onClick={(event)=>clickHandler(event, "direction")}  active={ direction === 'credit' } >Credit</ListGroup.Item>
+                        <ListGroup.Item id="debit" action variant="light" onClick={(event)=>clickHandler(event, "direction")}  active={ direction === 'debit' } >Debit</ListGroup.Item>
                     </ListGroup>
                 </Col>
             </Row>
@@ -255,6 +262,10 @@ const Controls = (props) => {
                                 <Form.Control name="date" type="date" value={date} onChange={changeHandler} min={min} max={max} />
                             </Form.Group>
 
+                            <Form.Group className="mb-3" controlId="formBasicNoDate"> 
+                                <Form.Check name="noDate" label="No Date" type="checkbox" checked={noDate} onChange={changeHandler}  />
+                            </Form.Group>
+
                             <Form.Group className="mb-3" controlId="formBasicYear"> 
                                 <Form.Label>Year</Form.Label>
                                 <Form.Control name="year" type="text" value={year} disabled />
@@ -265,12 +276,12 @@ const Controls = (props) => {
                                 <Form.Control name="name" type="text" defaultValue={name.toUpperCase()} disabled  />
                             </Form.Group>
 
-                            <Form.Group controlId="incoming" >
+                            <Form.Group controlId="credit" >
                                 <Form.Label>Type</Form.Label>
-                                <Form.Check name="direction" type="radio" label="Incoming" checked={direction === "incoming"} onChange={changeHandler} />
+                                <Form.Check name="direction" type="radio" label="Credit" checked={direction === "credit"} onChange={changeHandler} />
                             </Form.Group>
-                            <Form.Group className="mb-3" controlId="outgoing" >
-                                <Form.Check name="direction" type="radio" label="Outgoing" checked={direction === "outgoing"} onChange={changeHandler} />
+                            <Form.Group className="mb-3" controlId="debit" >
+                                <Form.Check name="direction" type="radio" label="Debit" checked={direction === "debit"} onChange={changeHandler} />
                             </Form.Group>  
 
                             <Form.Group className="mb-3" controlId="formBasicAmount">
@@ -280,9 +291,9 @@ const Controls = (props) => {
                             </Form.Group> 
 
                             <Form.Group className="mb-3" controlId="formBasicNarration">
-                                <Form.Label>Narration</Form.Label>
-                                <Form.Control as="textarea" placeholder="Enter narration" onChange={changeHandler} value={narration} />
-                                { narrationValidationFail ? <div className={styles.validationFail} ><span> { ExclamationIcon } </span><span>Narration must contain some descriptive text</span></div> : null }
+                                <Form.Label>Description</Form.Label>
+                                <Form.Control as="textarea" placeholder="Enter description" onChange={changeHandler} value={description} />
+                                { narrationValidationFail ? <div className={styles.validationFail} ><span> { ExclamationIcon } </span><span>Description must contain some descriptive text</span></div> : null }
                             </Form.Group> 
                         </Form>
                     </Modal.Body>

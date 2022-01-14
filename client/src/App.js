@@ -16,17 +16,18 @@ function App(props) {
   const [ formData, setFormData ] = useState( { name:"", year: "" } );
   const [ dataAll, setDataAll ] = useState([]);
   const [ noData, setNoData ] = useState(false);
-  const [ count, setCount ] = useState(0);
+  const [deletedYear, setDeletedYear] = useState("");
 
   const isMounted = useRef(false);
-  const preventRefire = useRef(false);
+  // const preventRefire = useRef(false);
 
   const { setShowLoader, setMsg, setSuccess, showLoader } = props;
   
   useEffect(() =>{
 
     const getAllDataHandler = (name, year) =>{
-      console.log("getalldata hit")
+      console.log("getalldata hit");
+      setDeletedYear("");
       setShowLoader(true);
   
       axios.get('/api/items', { params: { name: name, year: year } })
@@ -42,12 +43,11 @@ function App(props) {
                     if(noData){
                       setNoData(false);
                     }
-                    setCount(arrangedData.length);
                   }
                   else{
                     setNoData(true);
                   }
-                  preventRefire.current = true;
+                  // preventRefire.current = true;
                }
                else if(res.data.message){
                 setMsg("Could not load data. Please check your network connection"); // connection error from backend
@@ -67,10 +67,11 @@ function App(props) {
 
     
     if(formData.year === 'all'){
-      if(preventRefire.current){
-        preventRefire.current = false;
-        return;
-      }
+      // if(preventRefire.current){
+        // console.log("culprit???")
+        // preventRefire.current = false;
+        // return;
+      // }
       let { name, year } = formData;
       getAllDataHandler(name, year);
     }
@@ -81,19 +82,27 @@ function App(props) {
       isMounted.current = true;
       return;
     }
-    if(count === 0){
-      setDataAll([]);
-      setNoData(true);
+    if(deletedYear){
+      let newData = dataAll.filter((element, index) => element.year !== deletedYear)
+      if(!newData.length){
+        console.log('culprit ???');
+        // setDataAll([]);
+        setNoData(true);
+      }
+      else{
+        setDataAll(newData)
+      }
       setMsg("Deletion successful !");
       setSuccess(true);
     }
-  }, [count, setMsg, setSuccess]);
+    
+  }, [ setMsg, setSuccess, deletedYear, dataAll]);
 
   const stateUpdateHandler = (val) => {
       console.log("stateupdatehandler app.js", dataAll, noData);
       setFormData(val);
   }
-  
+  console.log('culprit app rendered')
   return (
     <div className="App"  >
 
@@ -103,7 +112,7 @@ function App(props) {
             { formData.year === 'all' && !showLoader  ? 
               ! noData ?
               dataAll.map((item, index) =>{
-                  return <TableYear key={index} formData={{...formData, year: item.year }} setCount={setCount} count={count}  dataAll={item.entries} />
+                  return <TableYear key={index} formData={{...formData, year: item.year }} dataAll={item.entries} setDeletedYear={setDeletedYear} />
                 
               })
               : <Row className="pt-5 ps-5 pe-5  col-lg-11"  > 
