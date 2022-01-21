@@ -2,10 +2,12 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const config = require('config');
+const cors = require('cors');
 
 const app = express();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // DB config
